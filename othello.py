@@ -129,41 +129,33 @@ class Othello:
                         break
             return min_eval
         
-  #  def evaluate_board(self):
-   #     black_score, white_score = self.get_score()
-    #    return black_score - white_score
-
+  
     def evaluate_board(self):
         black_score, white_score = self.get_score()
 
         # Position weights for strategic play
         corner_positions = [(0, 0), (0, 7), (7, 0), (7, 7)]
-        adjacent_corners = [(0, 1), (1, 0), (1, 1), (0, 6), (1, 6), (1, 7),
-                             (6, 0), (6, 1), (7, 1), (6, 6), (6, 7), (7, 6)]
-    
         edge_positions = [(0, i) for i in range(8)] + [(7, i) for i in range(8)] + \
                          [(i, 0) for i in range(8)] + [(i, 7) for i in range(8)]
 
-        # Assign scores based on stability
         corner_value = 100    # Very high priority
-        adjacent_corner_value = -25  # Dangerous positions
         edge_value = 10  # Stable edges are good
 
         # Calculate weighted position scores
         corner_score = sum(self.board[r, c] * corner_value for r, c in corner_positions)
-        adjacent_corner_score = sum(self.board[r, c] * adjacent_corner_value for r, c in adjacent_corners)
         edge_score = sum(self.board[r, c] * edge_value for r, c in edge_positions)
 
         # Calculate the evaluation score, adjusting based on the weights
-        return (black_score - white_score) + corner_score + edge_score + adjacent_corner_score 
+        return (black_score - white_score) + corner_score + edge_score 
             
 
     
     def undo_move(self, row, col, flipped_pieces):
         self.board[row, col] = 0  # Remove placed piece
-        for r, c in flipped_pieces:
-            self.board[r, c] *= -1  # Flip pieces back
-        self.current_player *= -1  # Switch turn back
+        if flipped_pieces:
+            for r, c in flipped_pieces:
+                self.board[r, c] *= -1  # Flip pieces back
+            self.current_player *= -1  # Switch turn back
 
     
                     
@@ -242,8 +234,10 @@ class Othello:
                     print("AI has no valid moves, skipping turn.")
         
         self.print_board()
-        print(f"Score - Black: {black_score}, White: {white_score}")
         print(self.get_winner())
+        black_score, white_score = self.get_score()
+        print(f"Score - Black: {black_score}, White: {white_score}")
+
 
 if __name__ == "__main__":
     game = Othello()
