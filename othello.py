@@ -135,18 +135,13 @@ class Othello:
 
         # Position weights for strategic play
         corner_positions = [(0, 0), (0, 7), (7, 0), (7, 7)]
-        edge_positions = [(0, i) for i in range(8)] + [(7, i) for i in range(8)] + \
-                         [(i, 0) for i in range(8)] + [(i, 7) for i in range(8)]
-
         corner_value = 100    # Very high priority
-        edge_value = 10  # Stable edges are good
 
         # Calculate weighted position scores
         corner_score = sum(self.board[r, c] * corner_value for r, c in corner_positions)
-        edge_score = sum(self.board[r, c] * edge_value for r, c in edge_positions)
 
         # Calculate the evaluation score, adjusting based on the weights
-        return (black_score - white_score) + corner_score + edge_score 
+        return (black_score - white_score) + corner_score if self.ai_player ==  1 else  (white_score - black_score) + corner_score
             
 
     
@@ -203,15 +198,20 @@ class Othello:
 
         while self.has_valid_moves():
             self.print_board()
-            valid_moves = self.get_valid_moves()
             black_score, white_score = self.get_score()
             print(f"Current player: {'Black' if self.current_player == 1 else 'White'}")
             print(f"Score - Black: {black_score}, White: {white_score}")
             
+            valid_moves = self.get_valid_moves()
+            
+            if not valid_moves:
+                print(f"No valid moves for {'Black' if self.current_player == 1 else 'White'}. Skipping turn.")
+                self.current_player *= -1
+                continue  # Skip to the next turn
+            
             if self.current_player == self.human_player:
-                valid_moves = self.get_valid_moves()
                 print(f"Available moves ({len(valid_moves)}): {valid_moves}")
-
+                if not valid_moves: continue
                 while True:
                     try:
                         user_input = input("Enter row and column (0-7) separated by space: ")
@@ -225,14 +225,15 @@ class Othello:
                         print("Invalid input. Please enter two numbers between 0 and 7, separated by a space.")
             else:
                 print(f"Available moves ({len(valid_moves)}): {valid_moves}")
-                move = self.ai_move(3)
+                move = self.ai_move(5)
                 if move:
                     row, col = move
                     print(f"AI plays: {row} {col}")
                     self.place_piece(row, col)
                 else:
                     print("AI has no valid moves, skipping turn.")
-        
+                    self.current_player *= -1  # Ensure AI skips turn properly                    
+            
         self.print_board()
         print(self.get_winner())
         black_score, white_score = self.get_score()
